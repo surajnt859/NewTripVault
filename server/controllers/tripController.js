@@ -3,14 +3,16 @@ import Trip from "../models/Trip.js";
 export const createTrip = async (req, res) => {
   try {
     const {
+      title,
       destination,
       startDate,
       endDate,
       budget,
       description,
+      rating,
     } = req.body;
 
-    if (!destination || !startDate || !endDate || !budget) {
+    if (!title || !destination || !startDate || !endDate || !budget) {
       return res.status(400).json({
         message: "Please fill all required fields",
       });
@@ -18,18 +20,19 @@ export const createTrip = async (req, res) => {
 
     const trip = await Trip.create({
       user: req.user.id,
+      title,
       destination,
       startDate,
       endDate,
       budget,
       description,
+      rating,
     });
 
     res.status(201).json({
       message: "Trip created successfully",
       trip,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -97,20 +100,30 @@ export const updateTrip = async (req, res) => {
       });
     }
 
-    const updatedTrip = await Trip.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const {
+      title,
+      destination,
+      startDate,
+      endDate,
+      budget,
+      description,
+      rating,
+    } = req.body;
+
+    trip.title = title;
+    trip.destination = destination;
+    trip.startDate = startDate;
+    trip.endDate = endDate;
+    trip.budget = budget;
+    trip.description = description;
+    trip.rating = rating;
+
+    const updatedTrip = await trip.save();
 
     res.status(200).json({
       message: "Trip updated successfully",
       trip: updatedTrip,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -138,7 +151,6 @@ export const deleteTrip = async (req, res) => {
     res.status(200).json({
       message: "Trip deleted successfully",
     });
-
   } catch (error) {
     console.error(error);
 
