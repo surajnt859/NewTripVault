@@ -4,21 +4,32 @@ import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, username, email, password } = req.body;
 
-    // Check if all fields are provided
-    if (!name || !email || !password) {
+    // Check if all required fields are provided
+    if (!name || !username || !email || !password) {
       return res.status(400).json({
         message: "Please fill all fields",
       });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if email already exists
+    const existingEmail = await User.findOne({ email });
 
-    if (existingUser) {
+    if (existingEmail) {
       return res.status(400).json({
-        message: "User already exists",
+        message: "User with this email already exists",
+      });
+    }
+
+    // Check if username already exists
+    const existingUsername = await User.findOne({
+      username: username.toLowerCase(),
+    });
+
+    if (existingUsername) {
+      return res.status(400).json({
+        message: "Username already exists",
       });
     }
 
@@ -28,8 +39,10 @@ export const registerUser = async (req, res) => {
     // Create user
     const user = await User.create({
       name,
+      username: username.toLowerCase(),
       email,
       password: hashedPassword,
+      bio: "",
     });
 
     res.status(201).json({
@@ -37,10 +50,11 @@ export const registerUser = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        username: user.username,
         email: user.email,
+        bio: user.bio,
       },
     });
-
   } catch (error) {
     console.error(error);
 
@@ -52,45 +66,52 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-        const { email, password } = req.body;
+    const { email, password } = req.body;
 
-        if (!email || !password) {
-         return res.status(400).json({
-           message: "Please provide email and password",
-         });
-        }
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Please provide email and password",
+      });
+    }
 
-        const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-        if (!user) {
-           return res.status(404).json({
-              message: "User not found",
-            });
-        }
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
 
-        if (!isMatch) {
-            return res.status(401).json({
-               message: "Invalid email or password",
-            });
-        }
-            const token = jwt.sign(
-              { id: user._id },
-              process.env.JWT_SECRET,
-              { expiresIn: "7d" }
-            );
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid email or password",
+      });
+    }
 
-            return res.status(200).json({
-                message: "Login successful",
-                token,
-                user: {
-                    id: user._id,
-                    name: user.name,
-                    email: user.email,
-                },
-            });
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        bio: user.bio || "",
+      },
+    });
   } catch (error) {
     console.error(error);
 

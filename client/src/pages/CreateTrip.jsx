@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
@@ -16,6 +16,9 @@ const CreateTrip = () => {
     rating: "",
   });
 
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
+
   const handleChange = (e) => {
     setTrip({
       ...trip,
@@ -23,18 +26,57 @@ const CreateTrip = () => {
     });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) {
+      setImage(null);
+      setPreview("");
+      return;
+    }
+
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await api.post("/trips", trip);
+      // 1. Create the trip first
+      const response = await api.post("/trips", trip);
+
+      const createdTrip = response.data.trip;
+
+      // 2. Upload the selected image
+      if (image) {
+        const formData = new FormData();
+        formData.append("image", image);
+
+        await api.post(
+          `/trips/${createdTrip._id}/upload`,
+          formData
+        );
+      }
 
       alert("Trip Created Successfully!");
 
       navigate("/dashboard");
     } catch (error) {
-      console.error(error);
-      alert("Failed to create trip");
+      console.error("Create trip error:", error);
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to create trip"
+      );
     }
   };
 
@@ -181,6 +223,37 @@ const CreateTrip = () => {
                 onChange={handleChange}
                 className="custom-textarea"
               />
+            </div>
+
+            {/* Week 3: Trip Cover Photo */}
+            <div className="custom-input-group mb-4">
+              <label className="custom-label">
+                Trip Cover Photo
+              </label>
+
+              <input
+                type="file"
+                name="image"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageChange}
+                className="custom-input"
+              />
+
+              {/* Image Preview */}
+              {preview && (
+                <div className="mt-3">
+                  <img
+                    src={preview}
+                    alt="Trip preview"
+                    style={{
+                      width: "100%",
+                      maxHeight: "300px",
+                      objectFit: "cover",
+                      borderRadius: "12px",
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Buttons */}

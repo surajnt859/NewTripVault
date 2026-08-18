@@ -15,6 +15,7 @@ function Register() {
 
   const [formData, setFormData] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
   });
@@ -36,24 +37,45 @@ function Register() {
 
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration Failed");
+      alert(
+        err.response?.data?.message ||
+          "Registration Failed"
+      );
     }
   };
 
   return (
     <div className="auth-wrapper">
       <div className="glass-card auth-card animate-fade-in">
+
         <div className="text-center mb-4">
-          <h1 className="fw-bold mb-2 brand-title justify-content-center" style={{ fontSize: "2rem" }}>
+          <h1
+            className="fw-bold mb-2 brand-title justify-content-center"
+            style={{ fontSize: "2rem" }}
+          >
             TripVault
           </h1>
-          <h2 className="fw-bold mb-1 h5 text-heading" style={{ fontFamily: "var(--font-heading)" }}>Create Account</h2>
-          <p className="text-visible-muted small">Start planning your dream journeys today</p>
+
+          <h2
+            className="fw-bold mb-1 h5 text-heading"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            Create Account
+          </h2>
+
+          <p className="text-visible-muted small">
+            Start planning your dream journeys today
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
+
+          {/* Full Name */}
           <div className="custom-input-group">
-            <label className="custom-label">Full Name</label>
+            <label className="custom-label">
+              Full Name
+            </label>
+
             <input
               type="text"
               name="name"
@@ -65,8 +87,34 @@ function Register() {
             />
           </div>
 
+          {/* Username */}
           <div className="custom-input-group">
-            <label className="custom-label">Email Address</label>
+            <label className="custom-label">
+              Username
+            </label>
+
+            <input
+              type="text"
+              name="username"
+              placeholder="johndoe"
+              value={formData.username}
+              onChange={handleChange}
+              className="custom-input"
+              minLength={3}
+              required
+            />
+
+            <small className="text-visible-muted">
+              This will be used for your public profile.
+            </small>
+          </div>
+
+          {/* Email */}
+          <div className="custom-input-group">
+            <label className="custom-label">
+              Email Address
+            </label>
+
             <input
               type="email"
               name="email"
@@ -78,8 +126,12 @@ function Register() {
             />
           </div>
 
+          {/* Password */}
           <div className="custom-input-group mb-4">
-            <label className="custom-label">Password</label>
+            <label className="custom-label">
+              Password
+            </label>
+
             <input
               type="password"
               name="password"
@@ -87,15 +139,36 @@ function Register() {
               value={formData.password}
               onChange={handleChange}
               className="custom-input"
+              minLength={6}
               required
             />
           </div>
 
-          <button type="submit" className="btn-primary-gradient w-100 py-3 mb-3 fs-6">
+          {/* Submit */}
+          <button
+            type="submit"
+            className="btn-primary-gradient w-100 py-3 mb-3 fs-6"
+          >
             Create Account
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line
+                x1="5"
+                y1="12"
+                x2="19"
+                y2="12"
+              />
+
+              <polyline points="12 5 19 12 12 19" />
             </svg>
           </button>
         </form>
@@ -103,11 +176,17 @@ function Register() {
         <div className="text-center mt-3">
           <p className="text-visible-muted small mb-0">
             Already have an account?{" "}
-            <Link to="/" className="text-decoration-none fw-semibold" style={{ color: "#2dd4bf" }}>
+
+            <Link
+              to="/"
+              className="text-decoration-none fw-semibold"
+              style={{ color: "#2dd4bf" }}
+            >
               Log In
             </Link>
           </p>
         </div>
+
       </div>
     </div>
   );

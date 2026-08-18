@@ -19,6 +19,11 @@ const EditTrip = () => {
 
   const [loading, setLoading] = useState(true);
 
+  // Week 3: Image states
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     fetchTrip();
   }, [id]);
@@ -38,6 +43,11 @@ const EditTrip = () => {
         description: fetchedTrip.description || "",
         rating: fetchedTrip.rating || "",
       });
+
+      // Show existing cover image
+      if (fetchedTrip.coverImage) {
+        setPreview(fetchedTrip.coverImage);
+      }
     } catch (error) {
       console.error(error);
       alert("Failed to load trip");
@@ -53,18 +63,53 @@ const EditTrip = () => {
     });
   };
 
+  // Handle new image selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    setImage(file);
+
+    const imagePreview = URL.createObjectURL(file);
+    setPreview(imagePreview);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      setUploading(true);
+
+      // 1. Update normal trip details
       await api.put(`/trips/${id}`, trip);
+
+      // 2. Upload new cover image if selected
+      if (image) {
+        const formData = new FormData();
+
+        formData.append("image", image);
+
+        await api.post(
+          `/trips/${id}/upload?cover=true`,
+          formData
+        );
+      }
 
       alert("Trip Updated Successfully!");
 
       navigate("/dashboard");
     } catch (error) {
-      console.error(error);
-      alert("Failed to update trip");
+      console.error("Update trip error:", error);
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to update trip"
+      );
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -106,15 +151,18 @@ const EditTrip = () => {
                 style={{ color: "#2dd4bf" }}
                 role="status"
               >
-                <span className="visually-hidden">Loading...</span>
+                <span className="visually-hidden">
+                  Loading...
+                </span>
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
-
               {/* Trip Title */}
               <div className="custom-input-group">
-                <label className="custom-label">Trip Title</label>
+                <label className="custom-label">
+                  Trip Title
+                </label>
 
                 <input
                   type="text"
@@ -129,7 +177,9 @@ const EditTrip = () => {
 
               {/* Destination */}
               <div className="custom-input-group">
-                <label className="custom-label">Destination</label>
+                <label className="custom-label">
+                  Destination
+                </label>
 
                 <input
                   type="text"
@@ -146,12 +196,16 @@ const EditTrip = () => {
               <div className="row g-3">
                 <div className="col-md-6">
                   <div className="custom-input-group">
-                    <label className="custom-label">Start Date</label>
+                    <label className="custom-label">
+                      Start Date
+                    </label>
 
                     <input
                       type="date"
                       name="startDate"
-                      value={trip.startDate?.substring(0, 10) || ""}
+                      value={
+                        trip.startDate?.substring(0, 10) || ""
+                      }
                       onChange={handleChange}
                       className="custom-input"
                       required
@@ -161,12 +215,16 @@ const EditTrip = () => {
 
                 <div className="col-md-6">
                   <div className="custom-input-group">
-                    <label className="custom-label">End Date</label>
+                    <label className="custom-label">
+                      End Date
+                    </label>
 
                     <input
                       type="date"
                       name="endDate"
-                      value={trip.endDate?.substring(0, 10) || ""}
+                      value={
+                        trip.endDate?.substring(0, 10) || ""
+                      }
                       onChange={handleChange}
                       className="custom-input"
                       required
@@ -177,7 +235,9 @@ const EditTrip = () => {
 
               {/* Budget */}
               <div className="custom-input-group">
-                <label className="custom-label">Budget (INR ₹)</label>
+                <label className="custom-label">
+                  Budget (INR ₹)
+                </label>
 
                 <input
                   type="number"
@@ -192,7 +252,9 @@ const EditTrip = () => {
 
               {/* Rating */}
               <div className="custom-input-group">
-                <label className="custom-label">Rating</label>
+                <label className="custom-label">
+                  Rating
+                </label>
 
                 <select
                   name="rating"
@@ -201,12 +263,16 @@ const EditTrip = () => {
                   className="custom-input"
                   required
                 >
-                  <option value="">Select a rating</option>
+                  <option value="">
+                    Select a rating
+                  </option>
                   <option value="1">1 ⭐</option>
                   <option value="2">2 ⭐⭐</option>
                   <option value="3">3 ⭐⭐⭐</option>
                   <option value="4">4 ⭐⭐⭐⭐</option>
-                  <option value="5">5 ⭐⭐⭐⭐⭐</option>
+                  <option value="5">
+                    5 ⭐⭐⭐⭐⭐
+                  </option>
                 </select>
               </div>
 
@@ -225,32 +291,71 @@ const EditTrip = () => {
                 />
               </div>
 
+              {/* Week 3: Cover Image */}
+              <div className="custom-input-group mb-4">
+                <label className="custom-label">
+                  Trip Cover Photo
+                </label>
+
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageChange}
+                  className="custom-input"
+                />
+
+                {/* Image Preview */}
+                {preview && (
+                  <div className="mt-3">
+                    <img
+                      src={preview}
+                      alt="Trip cover preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: "300px",
+                        objectFit: "cover",
+                        borderRadius: "12px",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Buttons */}
               <div className="d-flex gap-3 pt-2">
                 <button
                   type="submit"
                   className="btn-primary-gradient flex-grow-1 py-3"
+                  disabled={uploading}
                 >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  {uploading ? (
+                    "Updating..."
+                  ) : (
+                    <>
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
 
-                  Update Trip
+                      Update Trip
+                    </>
+                  )}
                 </button>
 
                 <button
                   type="button"
                   className="btn-secondary-gradient py-3 px-4"
                   onClick={() => navigate("/dashboard")}
+                  disabled={uploading}
                 >
                   Cancel
                 </button>

@@ -159,3 +159,54 @@ export const deleteTrip = async (req, res) => {
     });
   }
 };
+
+export const uploadTripPhoto = async (req, res) => {
+  try {
+    const trip = await Trip.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!trip) {
+      return res.status(404).json({
+        message: "Trip not found",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Please upload an image",
+      });
+    }
+
+    const imageUrl = req.file.path;
+
+    // If this upload is specifically for changing
+    // the cover image, replace the existing cover image.
+    if (req.query.cover === "true") {
+      trip.coverImage = imageUrl;
+    } else {
+      // First uploaded photo becomes the cover image.
+      if (!trip.coverImage) {
+        trip.coverImage = imageUrl;
+      }
+    }
+
+    // Store the image in the photos array.
+    trip.photos.push(imageUrl);
+
+    const updatedTrip = await trip.save();
+
+    res.status(200).json({
+      message: "Photo uploaded successfully",
+      trip: updatedTrip,
+      imageUrl,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};

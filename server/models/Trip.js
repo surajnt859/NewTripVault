@@ -46,6 +46,17 @@ const tripSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
+
+    // Week 3: Cloudinary image fields
+    coverImage: {
+      type: String,
+      default: "",
+    },
+
+    photos: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

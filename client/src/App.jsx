@@ -5,15 +5,32 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import CreateTrip from "./pages/CreateTrip";
 import EditTrip from "./pages/EditTrip";
+import TripDetails from "./pages/TripDetails";
+import PublicProfile from "./pages/PublicProfile";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         {/* Public Routes */}
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/"
+          element={<Login />}
+        />
+
+        <Route
+          path="/register"
+          element={<Register />}
+        />
+
+        {/* Public Profile */}
+        <Route
+          path="/profile/:username"
+          element={<PublicProfile />}
+        />
 
         {/* Protected Routes */}
         <Route
@@ -42,6 +59,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/trip/:id"
+          element={
+            <ProtectedRoute>
+              <TripDetails />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );
