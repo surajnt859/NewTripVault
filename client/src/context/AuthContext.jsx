@@ -7,6 +7,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.getItem("token")
   );
 
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+
+    return storedUser
+      ? JSON.parse(storedUser)
+      : null;
+  });
+
   useEffect(() => {
     if (token) {
       localStorage.setItem("token", token);
@@ -15,18 +23,32 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const login = (jwt) => {
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(
+        "user",
+        JSON.stringify(user)
+      );
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [user]);
+
+  const login = (jwt, userData) => {
     setToken(jwt);
+    setUser(userData);
   };
 
   const logout = () => {
     setToken(null);
+    setUser(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
         token,
+        user,
         login,
         logout,
       }}

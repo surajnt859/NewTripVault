@@ -7,6 +7,7 @@ import CreateTrip from "./pages/CreateTrip";
 import EditTrip from "./pages/EditTrip";
 import TripDetails from "./pages/TripDetails";
 import PublicProfile from "./pages/PublicProfile";
+import EditProfile from "./pages/EditProfile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -66,6 +67,15 @@ function App() {
             <ProtectedRoute>
               <TripDetails />
             </ProtectedRoute>
+          }
+        />
+
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
           }
         />
 

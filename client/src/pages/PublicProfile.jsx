@@ -122,6 +122,7 @@ const PublicProfile = () => {
 
             {/* User Info */}
             <div className="text-center text-md-start flex-grow-1">
+
               <h1
                 className="fw-bold text-heading mb-1"
                 style={{
@@ -146,10 +147,19 @@ const PublicProfile = () => {
                   "No bio available yet."}
               </p>
 
-              <small className="text-visible-muted">
+              <small className="text-visible-muted d-block mb-3">
                 Member since{" "}
                 {formatDate(profile.createdAt)}
               </small>
+
+              {/* Edit Profile */}
+              <Link
+                to="/edit-profile"
+                className="btn-primary-gradient px-4 py-2 text-decoration-none d-inline-flex"
+              >
+                ✏️ Edit Profile
+              </Link>
+
             </div>
 
             {/* Trip Count */}
@@ -167,10 +177,11 @@ const PublicProfile = () => {
                   : "Trips"}
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Trips */}
+        {/* Trips Heading */}
         <div className="mb-4">
           <h2
             className="h3 fw-bold text-heading mb-1"
@@ -186,6 +197,7 @@ const PublicProfile = () => {
           </p>
         </div>
 
+        {/* No Trips */}
         {trips.length === 0 ? (
           <div className="glass-card p-5 text-center">
             <h3 className="text-heading fw-bold">
@@ -197,6 +209,8 @@ const PublicProfile = () => {
             </p>
           </div>
         ) : (
+
+          /* Trips */
           <div className="row g-4">
             {trips.map((trip) => (
               <div
@@ -232,7 +246,9 @@ const PublicProfile = () => {
 
                   <div className="p-4 d-flex flex-column flex-grow-1">
 
+                    {/* Title + Budget */}
                     <div className="d-flex justify-content-between align-items-start gap-2 mb-3">
+
                       <h3
                         className="h4 fw-bold text-heading mb-0"
                         style={{
@@ -249,17 +265,21 @@ const PublicProfile = () => {
                           trip.budget || 0
                         ).toLocaleString()}
                       </span>
+
                     </div>
 
+                    {/* Dates */}
                     <span className="badge-date mb-3">
                       {formatDate(trip.startDate)} -{" "}
                       {formatDate(trip.endDate)}
                     </span>
 
+                    {/* Destination */}
                     <h4 className="h6 fw-bold text-heading mb-3">
                       📍 {trip.destination}
                     </h4>
 
+                    {/* Rating */}
                     <div className="mb-3">
                       <span className="text-visible-muted small fw-semibold me-2">
                         Rating:
@@ -281,6 +301,7 @@ const PublicProfile = () => {
                       </span>
                     </div>
 
+                    {/* Description */}
                     <p
                       className="text-visible-muted small flex-grow-1 mb-0"
                       style={{
@@ -297,6 +318,7 @@ const PublicProfile = () => {
             ))}
           </div>
         )}
+
       </main>
     </div>
   );

@@ -1,9 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
+
 import api from "../api/axios";
+import { AuthContext } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+
+  const { login } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -31,30 +35,65 @@ function Login() {
     try {
       const res = await api.post("/auth/login", formData);
 
-      localStorage.setItem("token", res.data.token);
+      /*
+       * Store both:
+       * 1. JWT token
+       * 2. Logged-in user information
+       */
+      login(res.data.token, res.data.user);
 
       alert("Login Successful!");
 
       navigate("/dashboard");
-    } catch (err) {
-      alert(err.response?.data?.message || "Login Failed");
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error.response?.data?.message ||
+          "Login Failed"
+      );
     }
   };
 
   return (
     <div className="auth-wrapper">
       <div className="glass-card auth-card animate-fade-in">
+
+        {/* Header */}
         <div className="text-center mb-4">
-          <h1 className="fw-bold mb-2 brand-title justify-content-center" style={{ fontSize: "2rem" }}>
+
+          <h1
+            className="fw-bold mb-2 brand-title justify-content-center"
+            style={{ fontSize: "2rem" }}
+          >
             TripVault
           </h1>
-          <h2 className="fw-bold mb-1 h5 text-heading" style={{ fontFamily: "var(--font-heading)" }}>Welcome Back</h2>
-          <p className="text-visible-muted small">Sign in to access your travel vault & itineraries</p>
+
+          <h2
+            className="fw-bold mb-1 h5 text-heading"
+            style={{
+              fontFamily: "var(--font-heading)",
+            }}
+          >
+            Welcome Back
+          </h2>
+
+          <p className="text-visible-muted small">
+            Login to continue planning your journeys
+          </p>
+
         </div>
 
+        {/* Login Form */}
         <form onSubmit={handleSubmit}>
+
+          {/* Email */}
           <div className="custom-input-group">
-            <label className="custom-label">Email Address</label>
+
+            <label className="custom-label">
+              Email Address
+            </label>
+
             <input
               type="email"
               name="email"
@@ -64,10 +103,16 @@ function Login() {
               className="custom-input"
               required
             />
+
           </div>
 
+          {/* Password */}
           <div className="custom-input-group mb-4">
-            <label className="custom-label">Password</label>
+
+            <label className="custom-label">
+              Password
+            </label>
+
             <input
               type="password"
               name="password"
@@ -77,25 +122,59 @@ function Login() {
               className="custom-input"
               required
             />
+
           </div>
 
-          <button type="submit" className="btn-primary-gradient w-100 py-3 mb-3 fs-6">
-            Sign In
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
+          {/* Login Button */}
+          <button
+            type="submit"
+            className="btn-primary-gradient w-100 py-3 mb-3 fs-6"
+          >
+            Login
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line
+                x1="5"
+                y1="12"
+                x2="19"
+                y2="12"
+              />
+
+              <polyline points="12 5 19 12 12 19" />
             </svg>
+
           </button>
+
         </form>
 
+        {/* Register Link */}
         <div className="text-center mt-3">
+
           <p className="text-visible-muted small mb-0">
+
             Don't have an account?{" "}
-            <Link to="/register" className="text-decoration-none fw-semibold" style={{ color: "#2dd4bf" }}>
+
+            <Link
+              to="/register"
+              className="text-decoration-none fw-semibold"
+              style={{ color: "#2dd4bf" }}
+            >
               Create Account
             </Link>
+
           </p>
+
         </div>
+
       </div>
     </div>
   );
