@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 
@@ -17,19 +19,22 @@ const EditTrip = () => {
     rating: "",
   });
 
-  const [loading, setLoading] = useState(true);
-
-  // Week 3: Image states
+  const [currentImage, setCurrentImage] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
-  const [uploading, setUploading] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch existing trip
   useEffect(() => {
     fetchTrip();
   }, [id]);
 
   const fetchTrip = async () => {
     try {
+      setLoading(true);
+
       const res = await api.get(`/trips/${id}`);
 
       const fetchedTrip = res.data.trip;
@@ -37,25 +42,33 @@ const EditTrip = () => {
       setTrip({
         title: fetchedTrip.title || "",
         destination: fetchedTrip.destination || "",
-        startDate: fetchedTrip.startDate || "",
-        endDate: fetchedTrip.endDate || "",
+        startDate: fetchedTrip.startDate
+          ? fetchedTrip.startDate.substring(0, 10)
+          : "",
+        endDate: fetchedTrip.endDate
+          ? fetchedTrip.endDate.substring(0, 10)
+          : "",
         budget: fetchedTrip.budget || "",
         description: fetchedTrip.description || "",
         rating: fetchedTrip.rating || "",
       });
 
-      // Show existing cover image
-      if (fetchedTrip.coverImage) {
-        setPreview(fetchedTrip.coverImage);
-      }
+      setCurrentImage(
+        fetchedTrip.coverImage || ""
+      );
     } catch (error) {
-      console.error(error);
-      alert("Failed to load trip");
+      console.error("Fetch trip error:", error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to load trip"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle text inputs
   const handleChange = (e) => {
     setTrip({
       ...trip,
@@ -63,53 +76,70 @@ const EditTrip = () => {
     });
   };
 
-  // Handle new image selection
+  // Handle new photo
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
     if (!file) {
+      setImage(null);
+      setPreview("");
       return;
     }
 
     setImage(file);
-
-    const imagePreview = URL.createObjectURL(file);
-    setPreview(imagePreview);
+    setPreview(URL.createObjectURL(file));
   };
 
+  // Clean preview URL
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
+  // Submit changes
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      setUploading(true);
+      setSaving(true);
 
-      // 1. Update normal trip details
+      // 1. Update trip details
       await api.put(`/trips/${id}`, trip);
 
-      // 2. Upload new cover image if selected
+      // 2. Upload new image if selected
       if (image) {
         const formData = new FormData();
 
         formData.append("image", image);
 
-        await api.post(
-          `/trips/${id}/upload?cover=true`,
+        const uploadResponse = await api.post(
+          `/trips/${id}/upload`,
           formData
         );
+
+        // Update current image with uploaded image
+        if (uploadResponse.data.trip?.coverImage) {
+          setCurrentImage(
+            uploadResponse.data.trip.coverImage
+          );
+        }
       }
 
-      alert("Trip Updated Successfully!");
+      toast.success("Trip updated successfully!");
 
       navigate("/dashboard");
     } catch (error) {
       console.error("Update trip error:", error);
 
-      alert(
+      toast.error(
         error.response?.data?.message ||
           "Failed to update trip"
       );
     } finally {
-      setUploading(false);
+      setSaving(false);
     }
   };
 
@@ -118,21 +148,27 @@ const EditTrip = () => {
       <Navbar />
 
       <main className="container py-5 flex-grow-1 d-flex justify-content-center align-items-start">
+
         <div
           className="glass-card p-4 p-md-5 w-100 animate-fade-in"
           style={{ maxWidth: "680px" }}
         >
+
+          {/* Header */}
           <div className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+
             <div>
               <h1
                 className="h3 fw-bold text-heading mb-1"
-                style={{ fontFamily: "var(--font-heading)" }}
+                style={{
+                  fontFamily: "var(--font-heading)",
+                }}
               >
                 Edit Trip
               </h1>
 
               <p className="text-visible-muted small mb-0">
-                Update your trip details and budget planning
+                Update your trip details and cover photo
               </p>
             </div>
 
@@ -142,10 +178,14 @@ const EditTrip = () => {
             >
               ← Dashboard
             </Link>
+
           </div>
 
+          {/* Loading */}
           {loading ? (
+
             <div className="text-center py-5">
+
               <div
                 className="spinner-border"
                 style={{ color: "#2dd4bf" }}
@@ -155,11 +195,20 @@ const EditTrip = () => {
                   Loading...
                 </span>
               </div>
+
+              <p className="text-visible-muted mt-3 mb-0">
+                Loading trip...
+              </p>
+
             </div>
+
           ) : (
+
             <form onSubmit={handleSubmit}>
+
               {/* Trip Title */}
               <div className="custom-input-group">
+
                 <label className="custom-label">
                   Trip Title
                 </label>
@@ -169,14 +218,15 @@ const EditTrip = () => {
                   name="title"
                   value={trip.title}
                   onChange={handleChange}
-                  placeholder="e.g. Summer Vacation in Paris"
                   className="custom-input"
                   required
                 />
+
               </div>
 
               {/* Destination */}
               <div className="custom-input-group">
+
                 <label className="custom-label">
                   Destination
                 </label>
@@ -186,16 +236,19 @@ const EditTrip = () => {
                   name="destination"
                   value={trip.destination}
                   onChange={handleChange}
-                  placeholder="Destination"
                   className="custom-input"
                   required
                 />
+
               </div>
 
               {/* Dates */}
               <div className="row g-3">
+
                 <div className="col-md-6">
+
                   <div className="custom-input-group">
+
                     <label className="custom-label">
                       Start Date
                     </label>
@@ -203,18 +256,20 @@ const EditTrip = () => {
                     <input
                       type="date"
                       name="startDate"
-                      value={
-                        trip.startDate?.substring(0, 10) || ""
-                      }
+                      value={trip.startDate}
                       onChange={handleChange}
                       className="custom-input"
                       required
                     />
+
                   </div>
+
                 </div>
 
                 <div className="col-md-6">
+
                   <div className="custom-input-group">
+
                     <label className="custom-label">
                       End Date
                     </label>
@@ -222,19 +277,21 @@ const EditTrip = () => {
                     <input
                       type="date"
                       name="endDate"
-                      value={
-                        trip.endDate?.substring(0, 10) || ""
-                      }
+                      value={trip.endDate}
                       onChange={handleChange}
                       className="custom-input"
                       required
                     />
+
                   </div>
+
                 </div>
+
               </div>
 
               {/* Budget */}
               <div className="custom-input-group">
+
                 <label className="custom-label">
                   Budget (INR ₹)
                 </label>
@@ -244,14 +301,15 @@ const EditTrip = () => {
                   name="budget"
                   value={trip.budget}
                   onChange={handleChange}
-                  placeholder="Budget"
                   className="custom-input"
                   required
                 />
+
               </div>
 
               {/* Rating */}
               <div className="custom-input-group">
+
                 <label className="custom-label">
                   Rating
                 </label>
@@ -266,18 +324,33 @@ const EditTrip = () => {
                   <option value="">
                     Select a rating
                   </option>
-                  <option value="1">1 ⭐</option>
-                  <option value="2">2 ⭐⭐</option>
-                  <option value="3">3 ⭐⭐⭐</option>
-                  <option value="4">4 ⭐⭐⭐⭐</option>
+
+                  <option value="1">
+                    1 ⭐
+                  </option>
+
+                  <option value="2">
+                    2 ⭐⭐
+                  </option>
+
+                  <option value="3">
+                    3 ⭐⭐⭐
+                  </option>
+
+                  <option value="4">
+                    4 ⭐⭐⭐⭐
+                  </option>
+
                   <option value="5">
                     5 ⭐⭐⭐⭐⭐
                   </option>
                 </select>
+
               </div>
 
               {/* Description */}
-              <div className="custom-input-group mb-4">
+              <div className="custom-input-group">
+
                 <label className="custom-label">
                   Description / Itinerary Notes
                 </label>
@@ -286,16 +359,41 @@ const EditTrip = () => {
                   name="description"
                   value={trip.description}
                   onChange={handleChange}
-                  placeholder="Description"
                   className="custom-textarea"
+                  placeholder="Add notes about your trip..."
+                  rows={5}
                 />
+
               </div>
 
-              {/* Week 3: Cover Image */}
+              {/* Current / New Cover Photo */}
               <div className="custom-input-group mb-4">
+
                 <label className="custom-label">
                   Trip Cover Photo
                 </label>
+
+                {/* Current image */}
+                {currentImage && !preview && (
+                  <div className="mb-3">
+
+                    <p className="text-visible-muted small mb-2">
+                      Current photo
+                    </p>
+
+                    <img
+                      src={currentImage}
+                      alt="Current trip cover"
+                      style={{
+                        width: "100%",
+                        maxHeight: "300px",
+                        objectFit: "cover",
+                        borderRadius: "12px",
+                      }}
+                    />
+
+                  </div>
+                )}
 
                 <input
                   type="file"
@@ -305,12 +403,22 @@ const EditTrip = () => {
                   className="custom-input"
                 />
 
-                {/* Image Preview */}
+                <small className="text-visible-muted">
+                  Select a new photo to replace the
+                  current cover image.
+                </small>
+
+                {/* New image preview */}
                 {preview && (
                   <div className="mt-3">
+
+                    <p className="text-visible-muted small mb-2">
+                      New photo preview
+                    </p>
+
                     <img
                       src={preview}
-                      alt="Trip cover preview"
+                      alt="New trip preview"
                       style={{
                         width: "100%",
                         maxHeight: "300px",
@@ -318,19 +426,31 @@ const EditTrip = () => {
                         borderRadius: "12px",
                       }}
                     />
+
                   </div>
                 )}
+
               </div>
 
               {/* Buttons */}
               <div className="d-flex gap-3 pt-2">
+
                 <button
                   type="submit"
                   className="btn-primary-gradient flex-grow-1 py-3"
-                  disabled={uploading}
+                  disabled={saving}
                 >
-                  {uploading ? (
-                    "Updating..."
+
+                  {saving ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      />
+
+                      Saving...
+                    </>
                   ) : (
                     <>
                       <svg
@@ -349,20 +469,28 @@ const EditTrip = () => {
                       Update Trip
                     </>
                   )}
+
                 </button>
 
                 <button
                   type="button"
                   className="btn-secondary-gradient py-3 px-4"
-                  onClick={() => navigate("/dashboard")}
-                  disabled={uploading}
+                  onClick={() =>
+                    navigate("/dashboard")
+                  }
+                  disabled={saving}
                 >
                   Cancel
                 </button>
+
               </div>
+
             </form>
+
           )}
+
         </div>
+
       </main>
     </div>
   );

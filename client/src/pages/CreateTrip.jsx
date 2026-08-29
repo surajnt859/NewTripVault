@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 
@@ -18,6 +20,7 @@ const CreateTrip = () => {
 
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setTrip({
@@ -51,6 +54,8 @@ const CreateTrip = () => {
     e.preventDefault();
 
     try {
+      setLoading(true);
+
       // 1. Create the trip first
       const response = await api.post("/trips", trip);
 
@@ -59,6 +64,7 @@ const CreateTrip = () => {
       // 2. Upload the selected image
       if (image) {
         const formData = new FormData();
+
         formData.append("image", image);
 
         await api.post(
@@ -67,16 +73,18 @@ const CreateTrip = () => {
         );
       }
 
-      alert("Trip Created Successfully!");
+      toast.success("Trip created successfully!");
 
       navigate("/dashboard");
     } catch (error) {
       console.error("Create trip error:", error);
 
-      alert(
+      toast.error(
         error.response?.data?.message ||
           "Failed to create trip"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,17 +97,21 @@ const CreateTrip = () => {
           className="glass-card p-4 p-md-5 w-100 animate-fade-in"
           style={{ maxWidth: "680px" }}
         >
+          {/* Header */}
           <div className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-25">
             <div>
               <h1
                 className="h3 fw-bold text-heading mb-1"
-                style={{ fontFamily: "var(--font-heading)" }}
+                style={{
+                  fontFamily: "var(--font-heading)",
+                }}
               >
                 Create New Trip
               </h1>
 
               <p className="text-visible-muted small mb-0">
-                Fill in details to plan your upcoming adventure
+                Fill in details to plan your upcoming
+                adventure
               </p>
             </div>
 
@@ -114,7 +126,9 @@ const CreateTrip = () => {
           <form onSubmit={handleSubmit}>
             {/* Trip Title */}
             <div className="custom-input-group">
-              <label className="custom-label">Trip Title</label>
+              <label className="custom-label">
+                Trip Title
+              </label>
 
               <input
                 type="text"
@@ -129,7 +143,9 @@ const CreateTrip = () => {
 
             {/* Destination */}
             <div className="custom-input-group">
-              <label className="custom-label">Destination</label>
+              <label className="custom-label">
+                Destination
+              </label>
 
               <input
                 type="text"
@@ -146,7 +162,9 @@ const CreateTrip = () => {
             <div className="row g-3">
               <div className="col-md-6">
                 <div className="custom-input-group">
-                  <label className="custom-label">Start Date</label>
+                  <label className="custom-label">
+                    Start Date
+                  </label>
 
                   <input
                     type="date"
@@ -161,7 +179,9 @@ const CreateTrip = () => {
 
               <div className="col-md-6">
                 <div className="custom-input-group">
-                  <label className="custom-label">End Date</label>
+                  <label className="custom-label">
+                    End Date
+                  </label>
 
                   <input
                     type="date"
@@ -177,7 +197,9 @@ const CreateTrip = () => {
 
             {/* Budget */}
             <div className="custom-input-group">
-              <label className="custom-label">Budget (INR ₹)</label>
+              <label className="custom-label">
+                Budget (INR ₹)
+              </label>
 
               <input
                 type="number"
@@ -192,7 +214,9 @@ const CreateTrip = () => {
 
             {/* Rating */}
             <div className="custom-input-group">
-              <label className="custom-label">Rating</label>
+              <label className="custom-label">
+                Rating
+              </label>
 
               <select
                 name="rating"
@@ -201,12 +225,29 @@ const CreateTrip = () => {
                 className="custom-input"
                 required
               >
-                <option value="">Select a rating</option>
-                <option value="1">1 ⭐</option>
-                <option value="2">2 ⭐⭐</option>
-                <option value="3">3 ⭐⭐⭐</option>
-                <option value="4">4 ⭐⭐⭐⭐</option>
-                <option value="5">5 ⭐⭐⭐⭐⭐</option>
+                <option value="">
+                  Select a rating
+                </option>
+
+                <option value="1">
+                  1 ⭐
+                </option>
+
+                <option value="2">
+                  2 ⭐⭐
+                </option>
+
+                <option value="3">
+                  3 ⭐⭐⭐
+                </option>
+
+                <option value="4">
+                  4 ⭐⭐⭐⭐
+                </option>
+
+                <option value="5">
+                  5 ⭐⭐⭐⭐⭐
+                </option>
               </select>
             </div>
 
@@ -225,7 +266,7 @@ const CreateTrip = () => {
               />
             </div>
 
-            {/* Week 3: Trip Cover Photo */}
+            {/* Trip Cover Photo */}
             <div className="custom-input-group mb-4">
               <label className="custom-label">
                 Trip Cover Photo
@@ -261,27 +302,45 @@ const CreateTrip = () => {
               <button
                 type="submit"
                 className="btn-primary-gradient flex-grow-1 py-3"
+                disabled={loading}
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                {loading ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
 
-                Create Trip
+                    Creating Trip...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+
+                    Create Trip
+                  </>
+                )}
               </button>
 
               <button
                 type="button"
                 className="btn-secondary-gradient py-3 px-4"
-                onClick={() => navigate("/dashboard")}
+                onClick={() =>
+                  navigate("/dashboard")
+                }
+                disabled={loading}
               >
                 Cancel
               </button>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import api from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
@@ -13,6 +14,8 @@ function Login() {
     email: "",
     password: "",
   });
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -33,25 +36,30 @@ function Login() {
     e.preventDefault();
 
     try {
+      setLoading(true);
+
       const res = await api.post("/auth/login", formData);
 
       /*
-       * Store both:
-       * 1. JWT token
-       * 2. Logged-in user information
+       * Store JWT token and user information
        */
       login(res.data.token, res.data.user);
 
-      alert("Login Successful!");
+      // Success toast
+      toast.success("Login successful!");
 
+      // Go to dashboard
       navigate("/dashboard");
-    } catch (error) {
-      console.error(error);
 
-      alert(
+    } catch (error) {
+      console.error("Login error:", error);
+
+      toast.error(
         error.response?.data?.message ||
-          "Login Failed"
+          "Login failed"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,6 +109,7 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               className="custom-input"
+              autoComplete="email"
               required
             />
 
@@ -120,6 +129,7 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               className="custom-input"
+              autoComplete="current-password"
               required
             />
 
@@ -129,28 +139,34 @@ function Login() {
           <button
             type="submit"
             className="btn-primary-gradient w-100 py-3 mb-3 fs-6"
+            disabled={loading}
           >
-            Login
 
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line
-                x1="5"
-                y1="12"
-                x2="19"
-                y2="12"
-              />
+            {loading ? "Logging in..." : "Login"}
 
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
+            {!loading && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line
+                  x1="5"
+                  y1="12"
+                  x2="19"
+                  y2="12"
+                />
+
+                <polyline
+                  points="12 5 19 12 12 19"
+                />
+              </svg>
+            )}
 
           </button>
 

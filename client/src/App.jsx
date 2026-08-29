@@ -11,9 +11,21 @@ import EditProfile from "./pages/EditProfile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function App() {
   return (
     <BrowserRouter>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="dark"
+      />
       <Routes>
 
         {/* Public Routes */}
