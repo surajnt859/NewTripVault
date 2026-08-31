@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const EditTrip = () => {
   const { id } = useParams();
@@ -492,6 +493,7 @@ const EditTrip = () => {
         </div>
 
       </main>
+      <Footer />
     </div>
   );
 };

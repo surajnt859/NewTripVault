@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const PublicProfile = () => {
   const { username } = useParams();
@@ -320,6 +321,7 @@ const PublicProfile = () => {
         )}
 
       </main>
+      <Footer />
     </div>
   );
 };

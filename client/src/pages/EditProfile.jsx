@@ -1,15 +1,16 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { AuthContext } from "../context/AuthContext";
 
 const EditProfile = () => {
   const navigate = useNavigate();
 
-  const { user, login, token } =
-    useContext(AuthContext);
+  const { user, login, token } = useContext(AuthContext);
 
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
@@ -26,7 +27,7 @@ const EditProfile = () => {
     e.preventDefault();
 
     if (!username.trim()) {
-      alert("Username is required");
+      toast.error("Username is required");
       return;
     }
 
@@ -53,17 +54,14 @@ const EditProfile = () => {
         bio: res.data.user.bio,
       });
 
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
 
-      navigate(
-        `/profile/${res.data.user.username}`
-      );
+      navigate(`/profile/${res.data.user.username}`);
     } catch (error) {
       console.error(error);
 
-      alert(
-        error.response?.data?.message ||
-          "Failed to update profile"
+      toast.error(
+        error.response?.data?.message || "Failed to update profile"
       );
     } finally {
       setLoading(false);
@@ -87,10 +85,7 @@ const EditProfile = () => {
             <div>
               <h1
                 className="h3 fw-bold text-heading mb-1"
-                style={{
-                  fontFamily:
-                    "var(--font-heading)",
-                }}
+                style={{ fontFamily: "var(--font-heading)" }}
               >
                 Edit Profile
               </h1>
@@ -101,11 +96,7 @@ const EditProfile = () => {
             </div>
 
             <Link
-              to={
-                user?.username
-                  ? `/profile/${user.username}`
-                  : "/dashboard"
-              }
+              to={user?.username ? `/profile/${user.username}` : "/dashboard"}
               className="btn-secondary-gradient px-3 py-2 text-decoration-none small"
             >
               ← Profile
@@ -117,16 +108,12 @@ const EditProfile = () => {
 
             {/* Username */}
             <div className="custom-input-group">
-              <label className="custom-label">
-                Username
-              </label>
+              <label className="custom-label">Username</label>
 
               <input
                 type="text"
                 value={username}
-                onChange={(e) =>
-                  setUsername(e.target.value)
-                }
+                onChange={(e) => setUsername(e.target.value)}
                 className="custom-input"
                 placeholder="e.g. suraj123"
                 minLength={3}
@@ -134,22 +121,17 @@ const EditProfile = () => {
               />
 
               <small className="text-visible-muted">
-                Your username is used for your public
-                profile URL.
+                Your username is used for your public profile URL.
               </small>
             </div>
 
             {/* Bio */}
             <div className="custom-input-group mb-4">
-              <label className="custom-label">
-                Bio
-              </label>
+              <label className="custom-label">Bio</label>
 
               <textarea
                 value={bio}
-                onChange={(e) =>
-                  setBio(e.target.value)
-                }
+                onChange={(e) => setBio(e.target.value)}
                 className="custom-textarea"
                 placeholder="Tell people a little about yourself..."
                 maxLength={300}
@@ -169,17 +151,13 @@ const EditProfile = () => {
                 className="btn-primary-gradient flex-grow-1 py-3"
                 disabled={loading}
               >
-                {loading
-                  ? "Saving..."
-                  : "Save Profile"}
+                {loading ? "Saving..." : "Save Profile"}
               </button>
 
               <button
                 type="button"
                 className="btn-secondary-gradient py-3 px-4"
-                onClick={() =>
-                  navigate("/dashboard")
-                }
+                onClick={() => navigate("/dashboard")}
               >
                 Cancel
               </button>
@@ -189,6 +167,7 @@ const EditProfile = () => {
           </form>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const CreateTrip = () => {
   const navigate = useNavigate();
@@ -348,6 +349,7 @@ const CreateTrip = () => {
           </form>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

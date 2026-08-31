@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const TripDetails = () => {
   const { id } = useParams();
@@ -21,7 +23,7 @@ const TripDetails = () => {
       setTrip(response.data.trip);
     } catch (error) {
       console.error(error);
-      alert("Failed to load trip");
+      toast.error("Failed to load trip");
       navigate("/dashboard");
     } finally {
       setLoading(false);
@@ -246,6 +248,7 @@ const TripDetails = () => {
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import api from "../api/axios";
 import TripCard from "../components/TripCard";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -286,6 +287,7 @@ const Dashboard = () => {
         )}
 
       </main>
+      <Footer />
     </div>
   );
 };
